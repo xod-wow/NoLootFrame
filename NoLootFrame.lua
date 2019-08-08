@@ -48,9 +48,19 @@ function NoLootFrame_OnEvent(self, event, ...)
         return
     end
 
+    if event == 'LOOT_SLOT_CLEARED' then
+        local slot = ...
+        local info = self.lootInfo[slot]
+        if info then
+            print(info.item)
+            AnnounceLoot(info)
+            self.lootInfo[slot] = nil
+        end
+    end
+
     if event == 'LOOT_CLOSED' then
         if self.lootInfo then
-            for _, info in ipairs(self.lootInfo or {}) do
+            for _, info in pairs(self.lootInfo) do
                 AnnounceLoot(info)
             end
             self.lootInfo = nil
