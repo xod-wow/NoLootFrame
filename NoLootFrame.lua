@@ -12,7 +12,10 @@ local events = {
     "LOOT_SLOT_CHANGED",
     "LOOT_CLOSED",
     "LOOT_READY",
+    "CHAT_MSG_LOOT",
 }
+
+local PoorQualityColor = '|c' .. select(4, GetItemQualityColor(0))
 
 local function AnnounceLoot(info)
     if info and info.quantity > 0 and info.quality > 0 then
@@ -32,11 +35,6 @@ end
 
 function NoLootFrame_OnEvent(self, event, ...)
 
-    if event == 'LOOT_READY' then
-        self.lootInfo = GetLootInfo()
-        return
-    end
-
     if event == 'LOOT_OPENED' then
         self.autoLoot = ...
     end
@@ -48,23 +46,26 @@ function NoLootFrame_OnEvent(self, event, ...)
         return
     end
 
-    if event == 'LOOT_SLOT_CLEARED' then
-        local slot = ...
-        local info = self.lootInfo[slot]
-        print('LOOT_SLOT_CLEARED ' .. slot)
-        if info then
-            AnnounceLoot(info)
-            self.lootInfo[slot] = nil
+    if event == 'CHAT_MSG_LOOT' then
+        local guid =  select(12, ...)
+        if guid ~= UnitGUID('player') then
+            return
         end
+        
+        local msg = ...
+        local pre, color, link, post = msg:match('^(.*)(|c........)(|H.+|h)(.*)$')
+        if color == PoorQualityColor then
+            return
+        end
+        local txt = '|cff33cc33' .. pre .. FONT_COLOR_CODE_CLOSE
+                    .. color .. link .. '|r' ..
+                    '|cff33cc33' .. post .. FONT_COLOR_CODE_CLOSE
+        UIErrorsFrame:AddMessage(txt)
+        return
     end
 
     if event == 'LOOT_CLOSED' then
-        if self.lootInfo then
-            for _, info in pairs(self.lootInfo) do
-                print('FORGOTTEN LOOT: ' .. info.item)
-            end
-            self.lootInfo = nil
-        end
+        self.autoLoot = nil
     end
 end
 
