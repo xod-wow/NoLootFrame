@@ -39,19 +39,11 @@ function NoLootFrame_OnEvent(self, event, ...)
         self.autoLoot = ...
     end
 
-    if not self.autoLoot then
-        if not InCombatLockdown() then
-            LootFrame_OnEvent(LootFrame, event, ...)
-        end
-        return
-    end
-
     if event == 'CHAT_MSG_LOOT' then
         local guid =  select(12, ...)
         if guid ~= UnitGUID('player') then
             return
         end
-        
         local msg = ...
         local pre, color, link, post = msg:match('^(.*)(|c........)(|H.+|h)(.*)$')
         if color == PoorQualityColor then
@@ -61,6 +53,13 @@ function NoLootFrame_OnEvent(self, event, ...)
                     .. color .. link .. '|r' ..
                     '|cff33cc33' .. post .. FONT_COLOR_CODE_CLOSE
         UIErrorsFrame:AddMessage(txt)
+        return
+    end
+
+    if not self.autoLoot then
+        if not InCombatLockdown() then
+            LootFrame_OnEvent(LootFrame, event, ...)
+        end
         return
     end
 
