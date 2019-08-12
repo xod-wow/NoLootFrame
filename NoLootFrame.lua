@@ -38,7 +38,7 @@ function NoLootFrame_OnEvent(self, event, ...)
             return
         end
         local msg = ...
-        local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h)(.*)$')
+        local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h|r)(.*)$')
         if color == PoorQualityColor then
             return
         end
