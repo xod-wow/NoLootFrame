@@ -4,18 +4,7 @@
 
 ----------------------------------------------------------------------------]]--
 
-NoLootFrame = CreateFrame('Frame', UIParent)
-
-local events = {
-    "LOOT_OPENED",
-    "LOOT_SLOT_CLEARED",
-    "LOOT_SLOT_CHANGED",
-    "LOOT_CLOSED",
-    "LOOT_READY",
-    "CHAT_MSG_LOOT",
-}
-
-local PoorQualityColor = '|c' .. select(4, GetItemQualityColor(0))
+local PoorQualityColor = select(4, GetItemQualityColor(LE_ITEM_QUALITY_POOR))
 
 local function AnnounceLoot(info)
     if info and info.quantity > 0 and info.quality > 0 then
@@ -37,6 +26,10 @@ function NoLootFrame_OnEvent(self, event, ...)
 
     if event == 'LOOT_OPENED' then
         self.autoLoot = ...
+        if self.autoLoot then
+            CloseLoot()
+        return
+        end
     end
 
     if event == 'CHAT_MSG_LOOT' then
@@ -45,16 +38,19 @@ function NoLootFrame_OnEvent(self, event, ...)
             return
         end
         local msg = ...
-        local pre, color, link, post = msg:match('^(.*)(|c........)(|H.+|h)(.*)$')
+        local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h)(.*)$')
         if color == PoorQualityColor then
             return
         end
-        local txt = '|cff33cc33' .. pre .. FONT_COLOR_CODE_CLOSE
-                    .. color .. link .. '|r' ..
+        local txt = '|cff33cc33' .. pre .. FONT_COLOR_CODE_CLOSE ..
+                    link .. 
                     '|cff33cc33' .. post .. FONT_COLOR_CODE_CLOSE
         UIErrorsFrame:AddMessage(txt)
         return
     end
+
+    -- Half-baked attempt to pass event through to the regular loot
+    -- frame. Taint is a major issue, can't really do this.
 
     if not self.autoLoot then
         if not InCombatLockdown() then
@@ -68,9 +64,13 @@ function NoLootFrame_OnEvent(self, event, ...)
     end
 end
 
-NoLootFrame:SetScript('OnEvent', NoLootFrame_OnEvent)
+LootFrame:UnregisterEvent('LOOT_OPENED')
+LootFrame:UnregisterEvent('LOOT_SLOT_CLEARED')
+LootFrame:UnregisterEvent('LOOT_SLOT_CHANGED')
+LootFrame:UnregisterEvent('LOOT_CLOSED')
+LootFrame:UnregisterEvent('LOOT_READY')
 
-for _, event in ipairs(events) do
-    LootFrame:UnregisterEvent(event)
-    NoLootFrame:RegisterEvent(event)
-end
+NoLootFrame = CreateFrame('Frame', UIParent)
+NoLootFrame:SetScript('OnEvent', NoLootFrame_OnEvent)
+NoLootFrame:RegisterEvent('LOOT_OPENED')
+NoLootFrame:RegisterEvent('CHAT_MSG_LOOT')
