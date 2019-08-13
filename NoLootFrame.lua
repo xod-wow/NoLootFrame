@@ -19,7 +19,13 @@
 
 ----------------------------------------------------------------------------]]--
 
+--@debug@
+if LibDebug then LibDebug() end
+--@end-debug@
+
 local PoorQualityColor = select(4, GetItemQualityColor(LE_ITEM_QUALITY_POOR))
+
+local LootFrame_OnEvent = LootFrame_OnEvent
 
 local function AnnounceLoot(info)
     if info and info.quantity > 0 and info.quality > 0 then
@@ -37,13 +43,14 @@ end
 -- AutoLoot is done server-side now, so all we have to do is handle
 -- the events so the window doesn't show
 
-function NoLootFrame_OnEvent(self, event, ...)
+local function NoLootFrame_OnEvent(self, event, ...)
 
     if event == 'LOOT_OPENED' then
         self.autoLoot = ...
         if self.autoLoot then
+            LootFrame:SetScript('OnEvent', nil)
             CloseLoot()
-        return
+            return
         end
     end
 
@@ -64,28 +71,25 @@ function NoLootFrame_OnEvent(self, event, ...)
         return
     end
 
-    -- Half-baked attempt to pass event through to the regular loot
-    -- frame. Taint is a major issue, can't really do this.
-
-    if not self.autoLoot then
-        if not InCombatLockdown() then
-            LootFrame_OnEvent(LootFrame, event, ...)
-        end
-        return
-    end
-
     if event == 'LOOT_CLOSED' then
+        if self.autoLoot then
+            LootFrame:SetScript('OnEvent', LootFrame_OnEvent)
+        end
         self.autoLoot = nil
+        return
     end
 end
 
-LootFrame:UnregisterEvent('LOOT_OPENED')
-LootFrame:UnregisterEvent('LOOT_SLOT_CLEARED')
-LootFrame:UnregisterEvent('LOOT_SLOT_CHANGED')
-LootFrame:UnregisterEvent('LOOT_CLOSED')
-LootFrame:UnregisterEvent('LOOT_READY')
-
-NoLootFrame = CreateFrame('Frame', UIParent)
+_G.NoLootFrame = CreateFrame('Frame', UIParent)
 NoLootFrame:SetScript('OnEvent', NoLootFrame_OnEvent)
+
+-- We need to make sure we get this event before LootFrame so that we can
+-- unset it's OnEvent handler if we're autolooting.
+
+LootFrame:UnregisterEvent('LOOT_OPENED')
 NoLootFrame:RegisterEvent('LOOT_OPENED')
+LootFrame:RegisterEvent('LOOT_OPENED')
+
+NoLootFrame:RegisterEvent('LOOT_CLOSED')
 NoLootFrame:RegisterEvent('CHAT_MSG_LOOT')
+
