@@ -1,6 +1,21 @@
 --[[----------------------------------------------------------------------------
 
-    NoLootFrame
+  NoLootFrame
+
+  Copyright 2019 Mike Battersby
+
+  NoLootFrame is free software: you can redistribute it and/or modify it under
+  the terms of the GNU General Public License, version 2, as published by
+  the Free Software Foundation.
+
+  NoLootFrame is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  more details.
+
+  The file LICENSE included with NoLootFrame contains a copy of the
+  license. If the LICENSE file is missing, you can find a copy at
+  http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 
 ----------------------------------------------------------------------------]]--
 
