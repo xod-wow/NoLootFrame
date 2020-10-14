@@ -23,7 +23,7 @@
 if LibDebug then LibDebug() end
 --@end-debug@
 
-local PoorQualityColor = select(4, GetItemQualityColor(LE_ITEM_QUALITY_POOR))
+local PoorQualityColor = select(4, GetItemQualityColor(Enum.ItemQuality.Poor))
 
 local LootFrame_OnEvent = LootFrame_OnEvent
 
