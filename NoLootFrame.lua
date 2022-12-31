@@ -29,8 +29,7 @@ local LootFrame_OnEvent = LootFrame_OnEvent
 
 local function AnnounceLoot(info)
     if info and info.quantity > 0 and info.quality > 0 then
-        local colorInfo = ITEM_QUALITY_COLORS[info.quality]
-        local color = CreateColor(colorInfo.r, colorInfo.g, colorInfo.b, colorInfo.a)
+        local color = ITEM_QUALITY_COLORS[info.quality].color
         local txt = color:WrapTextInColorCode('[' .. info.item .. ']')
             txt = txt
                 .. '|cff19a919'
@@ -73,7 +72,7 @@ local function NoLootFrame_OnEvent(self, event, ...)
 
     if event == 'LOOT_CLOSED' then
         if self.autoLoot then
-            LootFrame:SetScript('OnEvent', LootFrame_OnEvent)
+            LootFrame:SetScript('OnEvent', LootFrameMixin.OnEvent)
         end
         self.autoLoot = nil
         return
