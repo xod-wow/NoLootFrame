@@ -1,8 +1,8 @@
-## Interface: 100107
+## Interface: 100200
 ## Title: NoLootFrame
 ## Version: @project-version@
 ## Author: Xodiv-Nagrand
 ## Email: mib@post.com
 ## OptionalDependencies: LibDebug
 
-NoLootFrame.lua
+NoLootFrame.xml

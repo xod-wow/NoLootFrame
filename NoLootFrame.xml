@@ -1,0 +1,25 @@
+<Ui>
+
+    <Script file="NoLootFrame.lua" />
+
+    <MessageFrame name="NoLootFrame" parent="UIParent" toplevel="true"
+        frameStrata="DIALOG" frameLevel="1"
+        displayDuration="5" fadeDuration=".5" fadePower="3" insertMode="TOP"
+        mixin="NoLootFrameMixin">
+
+        <Scripts>
+            <OnEvent method="OnEvent" />
+            <OnLoad method="OnLoad" />
+        </Scripts>
+
+        <Size x="512" y="180" />
+
+        <Anchors>
+            <Anchor point="TOP" relativeTo="RaidBossEmoteFrame" />
+        </Anchors>
+
+        <FontString inherits="GameFontNormalLarge" justifyH="CENTER"/>
+
+    </MessageFrame>
+
+</Ui>

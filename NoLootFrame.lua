@@ -23,50 +23,52 @@
 if LibDebug then LibDebug() end
 --@end-debug@
 
-local PoorQualityColor = select(4, GetItemQualityColor(Enum.ItemQuality.Poor))
+local LootFrame, LootFrameMixin = LootFrame, LootFrameMixin
 
-local LootFrame_OnEvent = LootFrame_OnEvent
-
-local function AnnounceLoot(info)
-    if info and info.quantity > 0 and info.quality > 0 then
-        local color = ITEM_QUALITY_COLORS[info.quality].color
-        local txt = color:WrapTextInColorCode('[' .. info.item .. ']')
-            txt = txt
-                .. '|cff19a919'
-                .. format('x%d', info.quantity or 0)
-                .. FONT_COLOR_CODE_CLOSE
-            UIErrorsFrame:AddMessage(txt)
-    end
-end
+NoLootFrameMixin = {}
 
 -- AutoLoot is done server-side now, so all we have to do is handle
 -- the events so the window doesn't show
 
-local function NoLootFrame_OnEvent(self, event, ...)
+function NoLootFrameMixin:OnEvent(event, ...)
 
     if event == 'LOOT_OPENED' then
         self.autoLoot = ...
         if self.autoLoot then
             LootFrame:SetScript('OnEvent', nil)
             CloseLoot()
-            return
         end
+        return
+    end
+
+    if event == "CHAT_MSG_CURRENCY" then
+        local msg = ...
+        if msg == "" then return end
+
+        local guid = select(12, ...)
+        if guid ~= UnitGUID('player') then return end
+
+        local info = ChatTypeInfo.CURRENCY
+        self:AddMessage(msg, info.r, info.g, info.b)
+        return
     end
 
     if event == 'CHAT_MSG_LOOT' then
-        local guid =  select(12, ...)
-        if guid ~= UnitGUID('player') then
-            return
-        end
         local msg = ...
-        local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h|r)(.*)$')
-        if color == PoorQualityColor then
-            return
+        if msg == "" then return end
+
+        -- local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h|r)(.*)$')
+        local _, _, link = ExtractHyperlinkString(msg)
+        local quality = select(3, GetItemInfo(link))
+        local guid = select(12, ...)
+        if guid == UnitGUID('player') then  
+            if quality < Enum.ItemQuality.Common then return end
+        else
+            if quality < Enum.ItemQuality.Rare then return end
         end
-        local txt = '|cff33cc33' .. pre .. FONT_COLOR_CODE_CLOSE ..
-                    link .. 
-                    '|cff33cc33' .. post .. FONT_COLOR_CODE_CLOSE
-        UIErrorsFrame:AddMessage(txt)
+
+        local info = ChatTypeInfo.LOOT
+        self:AddMessage(msg, info.r, info.g, info.b)
         return
     end
 
@@ -79,16 +81,15 @@ local function NoLootFrame_OnEvent(self, event, ...)
     end
 end
 
-_G.NoLootFrame = CreateFrame('Frame', UIParent)
-NoLootFrame:SetScript('OnEvent', NoLootFrame_OnEvent)
+function NoLootFrameMixin:OnLoad()
+    -- We need to make sure we get this event before LootFrame so that we can
+    -- unset it's OnEvent handler if we're autolooting.
 
--- We need to make sure we get this event before LootFrame so that we can
--- unset it's OnEvent handler if we're autolooting.
+    LootFrame:UnregisterEvent('LOOT_OPENED')
+    NoLootFrame:RegisterEvent('LOOT_OPENED')
+    LootFrame:RegisterEvent('LOOT_OPENED')
 
-LootFrame:UnregisterEvent('LOOT_OPENED')
-NoLootFrame:RegisterEvent('LOOT_OPENED')
-LootFrame:RegisterEvent('LOOT_OPENED')
-
-NoLootFrame:RegisterEvent('LOOT_CLOSED')
-NoLootFrame:RegisterEvent('CHAT_MSG_LOOT')
-
+    NoLootFrame:RegisterEvent('LOOT_CLOSED')
+    NoLootFrame:RegisterEvent('CHAT_MSG_LOOT')
+    NoLootFrame:RegisterEvent('CHAT_MSG_CURRENCY')
+end
