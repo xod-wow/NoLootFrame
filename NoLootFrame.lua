@@ -23,7 +23,18 @@
 if LibDebug then LibDebug() end
 --@end-debug@
 
+local MAX_LOOT_ENTRIES = 200
+
+local function printf(fmt, ...)
+    if fmt then
+        local msg = string.format(fmt, ...)
+        SELECTED_CHAT_FRAME:AddMessage(msg)
+    end
+end
+
 local LootFrame, LootFrameMixin = LootFrame, LootFrameMixin
+
+local defaults = { eventLog = {} }
 
 NoLootFrameMixin = {}
 
@@ -31,6 +42,18 @@ NoLootFrameMixin = {}
 -- the events so the window doesn't show
 
 function NoLootFrameMixin:OnEvent(event, ...)
+
+    if self.db then
+        table.insert(self.db.eventLog, { event, { ... } })
+    end
+
+    if event == 'PLAYER_LOGIN' then
+        NoLootFrameDB = CreateFromMixins(defaults, NoLootFrameDB or {})
+        self.db = NoLootFrameDB
+        while #self.db.eventLog > MAX_LOOT_ENTRIES do
+            table.remove(self.db.eventLog, 1)
+        end
+    end
 
     if event == 'LOOT_OPENED' then
         self.autoLoot = ...
@@ -45,26 +68,48 @@ function NoLootFrameMixin:OnEvent(event, ...)
         local msg = ...
         if msg == "" then return end
 
-        local guid = select(12, ...)
-        if guid ~= UnitGUID('player') then return end
-
         local info = ChatTypeInfo.CURRENCY
         self:AddMessage(msg, info.r, info.g, info.b)
         return
     end
 
+    -- [01] text,
+    -- [02] playerName,
+    -- [03] languageName,
+    -- [04] channelName,
+    -- [05] playerName2,
+    -- [06] specialFlags,
+    -- [07] zoneChannelID,
+    -- [08] channelIndex,
+    -- [09] channelBaseName,
+    -- [10] languageID,
+    -- [11] lineID,
+    -- [12] guid,
+    -- [13] bnSenderID,
+    -- [14] isMobile,
+    -- [15] isSubtitle,
+    -- [16] hideSenderInLetterbox,
+    -- [17] supressRaidIcons = ...
+
     if event == 'CHAT_MSG_LOOT' then
         local msg = ...
         if msg == "" then return end
 
-        -- local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h|r)(.*)$')
-        local _, _, link = ExtractHyperlinkString(msg)
-        local quality = select(3, GetItemInfo(link))
+        -- lootHistory messages don't have a GUID [12] == nil
         local guid = select(12, ...)
-        if guid == UnitGUID('player') then  
-            if quality < Enum.ItemQuality.Common then return end
-        else
-            if quality < Enum.ItemQuality.Rare then return end
+        if not guid then return end
+
+        local linkType = LinkUtil.ExtractLink(msg)
+        local _, _, link = ExtractHyperlinkString(msg)
+
+        -- local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h|r)(.*)$')
+
+        local minQualityName = ( guid == UnitGUID('player') ) and 'Common' or 'Rare'
+
+        -- If we got an item we can filter quality, otherwise who knows
+        if linkType == 'item' then
+            local quality = select(3, GetItemInfo(link))
+            if quality < Enum.ItemQuality[minQualityName] then return end
         end
 
         local info = ChatTypeInfo.LOOT
@@ -89,6 +134,7 @@ function NoLootFrameMixin:OnLoad()
     NoLootFrame:RegisterEvent('LOOT_OPENED')
     LootFrame:RegisterEvent('LOOT_OPENED')
 
+    NoLootFrame:RegisterEvent('PLAYER_LOGIN')
     NoLootFrame:RegisterEvent('LOOT_CLOSED')
     NoLootFrame:RegisterEvent('CHAT_MSG_LOOT')
     NoLootFrame:RegisterEvent('CHAT_MSG_CURRENCY')

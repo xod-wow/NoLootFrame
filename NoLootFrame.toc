@@ -4,5 +4,6 @@
 ## Author: Xodiv-Nagrand
 ## Email: mib@post.com
 ## OptionalDependencies: LibDebug
+## SavedVariables: NoLootFrameDB
 
 NoLootFrame.xml
