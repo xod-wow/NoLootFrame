@@ -12,7 +12,7 @@
             <OnLoad method="OnLoad" />
         </Scripts>
 
-        <Size x="512" y="180" />
+        <Size x="768" y="180" />
 
         <Anchors>
             <Anchor point="TOP" relativeTo="RaidBossEmoteFrame" />
