@@ -25,13 +25,6 @@ if LibDebug then LibDebug() end
 
 local MAX_LOOT_ENTRIES = 200
 
-local function printf(fmt, ...)
-    if fmt then
-        local msg = string.format(fmt, ...)
-        SELECTED_CHAT_FRAME:AddMessage(msg)
-    end
-end
-
 local LootFrame, LootFrameMixin = LootFrame, LootFrameMixin
 
 local defaults = { eventLog = {} }
