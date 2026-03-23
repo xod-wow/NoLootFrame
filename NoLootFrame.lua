@@ -58,11 +58,13 @@ function NoLootFrameMixin:OnEvent(event, ...)
     end
 
     if event == "CHAT_MSG_CURRENCY" then
-        local msg = ...
-        if msg == "" then return end
+        if not C_ChatInfo.InChatMessagingLockdown() then
+            local msg = ...
+            if msg == "" then return end
 
-        local info = ChatTypeInfo.CURRENCY
-        self:AddMessage(msg, info.r, info.g, info.b)
+            local info = ChatTypeInfo.CURRENCY
+            self:AddMessage(msg, info.r, info.g, info.b)
+        end
         return
     end
 
@@ -85,28 +87,30 @@ function NoLootFrameMixin:OnEvent(event, ...)
     -- [17] supressRaidIcons = ...
 
     if event == 'CHAT_MSG_LOOT' then
-        local msg = ...
-        if msg == "" then return end
+        if not C_ChatInfo.InChatMessagingLockdown() then
+            local msg = ...
+            if msg == "" then return end
 
-        -- lootHistory messages don't have a GUID [12] == nil
-        local guid = select(12, ...)
-        if not guid then return end
+            -- lootHistory messages don't have a GUID [12] == nil
+            local guid = select(12, ...)
+            if not guid then return end
 
-        local linkType = LinkUtil.ExtractLink(msg)
-        local _, _, link = ExtractHyperlinkString(msg)
+            local linkType = LinkUtil.ExtractLink(msg)
+            local _, _, link = ExtractHyperlinkString(msg)
 
-        -- local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h|r)(.*)$')
+            -- local pre, link, color, post = msg:match('^(.*)(|c(........)|H.+|h|r)(.*)$')
 
-        local minQualityName = ( guid == UnitGUID('player') ) and 'Common' or 'Rare'
+            local minQualityName = ( guid == UnitGUID('player') ) and 'Common' or 'Rare'
 
-        -- If we got an item we can filter quality, otherwise who knows
-        if linkType == 'item' then
-            local quality = select(3, GetItemInfo(link))
-            if quality < Enum.ItemQuality[minQualityName] then return end
+            -- If we got an item we can filter quality, otherwise who knows
+            if linkType == 'item' then
+                local quality = select(3, GetItemInfo(link))
+                if quality < Enum.ItemQuality[minQualityName] then return end
+            end
+
+            local info = ChatTypeInfo.LOOT
+            self:AddMessage(msg, info.r, info.g, info.b)
         end
-
-        local info = ChatTypeInfo.LOOT
-        self:AddMessage(msg, info.r, info.g, info.b)
         return
     end
 
