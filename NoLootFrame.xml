@@ -15,7 +15,7 @@
         <Size x="768" y="180" />
 
         <Anchors>
-            <Anchor point="TOP" relativeTo="RaidBossEmoteFrame" />
+            <Anchor point="TOP" relativeTo="PrivateRaidBossEmoteFrameAnchor" />
         </Anchors>
 
         <FontString inherits="GameFontNormalLarge" justifyH="CENTER"/>

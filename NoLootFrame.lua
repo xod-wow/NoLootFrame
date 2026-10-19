@@ -19,10 +19,6 @@
 
 ----------------------------------------------------------------------------]]--
 
---@debug@
-if LibDebug then LibDebug() end
---@end-debug@
-
 local MAX_LOOT_ENTRIES = 200
 
 local LootFrame, LootFrameMixin = LootFrame, LootFrameMixin
@@ -37,6 +33,7 @@ NoLootFrameMixin = {}
 function NoLootFrameMixin:OnEvent(event, ...)
 
     if self.db then
+        -- This is for debugging
         table.insert(self.db.eventLog, { event, { ... } })
     end
 
